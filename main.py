@@ -123,5 +123,7 @@ def get_by_tag():
     else: 
         return jsonify({"error": "Wrong tag"}), 400
 
+
+
 if __name__ == "__main__":
     app.run(debug=True)

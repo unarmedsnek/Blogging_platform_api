@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: Blogging Platform API
+  description: A REST API for managing blog posts
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  /posts:
+    get:
+      summary: Get all blog posts
+      description: Retrieves all blog posts, optionally filtered by tag
+      operationId: getAllPosts
+      parameters:
+        - name: tag
+          in: query
+          description: Filter posts by tag
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlogPost'
+        '400':
+          description: Invalid tag parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new blog post
+      description: Creates a new blog post with the provided data
+      operationId: createPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPostInput'
+      responses:
+        '201':
+          description: Blog post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+
+  /posts/{post_id}:
+    get:
+      summary: Get a blog post by ID
+      description: Retrieves a specific blog post by its ID
+      operationId: getPostById
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          description: The ID of the blog post
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Blog post found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+        '404':
+          description: Blog post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update a blog post
+      description: Updates an existing blog post with the provided data
+      operationId: updatePost
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          description: The ID of the blog post to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPostInput'
+      responses:
+        '200':
+          description: Blog post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+        '400':
+          description: Invalid request or missing fields
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Error'
+                  - $ref: '#/components/schemas/MissingFieldsError'
+
+    delete:
+      summary: Delete a blog post
+      description: Deletes a blog post by its ID
+      operationId: deletePost
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          description: The ID of the blog post to delete
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Blog post deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+        '404':
+          description: Blog post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the blog post
+          example: 1
+        title:
+          type: string
+          maxLength: 50
+          description: Title of the blog post
+          example: My First Blog Post
+        content:
+          type: string
+          maxLength: 500
+          description: Content of the blog post
+          example: This is the content of my first blog post.
+        category:
+          type: string
+          maxLength: 50
+          description: Category of the blog post
+          example: Technology
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags associated with the blog post
+          example: ["tech", "tutorial", "python"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the post was created
+          example: "2026-03-03T10:30:00"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the post was last updated
+          example: "2026-03-03T11:00:00"
+
+    BlogPostInput:
+      type: object
+      required:
+        - title
+        - content
+        - category
+        - tags
+      properties:
+        title:
+          type: string
+          maxLength: 50
+          description: Title of the blog post
+          example: My First Blog Post
+        content:
+          type: string
+          maxLength: 500
+          description: Content of the blog post
+          example: This is the content of my first blog post.
+        category:
+          type: string
+          maxLength: 50
+          description: Category of the blog post
+          example: Technology
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags associated with the blog post
+          example: ["tech", "tutorial", "python"]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+
+    MissingFieldsError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Missing required fields
+        missing:
+          type: array
+          items:
+            type: string
+          description: List of missing required fields
+          example: ["title", "content"]
